@@ -1,4 +1,4 @@
-module github.com/crossplane/provider-template
+module github.com/dunkin0486/provider-nagios
 
 go 1.25.11
 

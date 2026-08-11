@@ -9,10 +9,14 @@ metadata:
   namespace: default
   name: example-provider-secret
 type: Opaque
-data:
-  credentials: QkFTRTY0RU5DT0RFRF9QUk9WSURFUl9DUkVEUwo=
+stringData:
+  # JSON credentials expected by internal/clients.NewClient:
+  #   {"url": "<nagios xi base url>", "token": "<api key>"}
+  # The API token is found in the Nagios XI web UI under Admin > API Key.
+  credentials: |
+    {"url": "http://nagios.example.com/nagiosxi", "token": "REPLACE_ME"}
 ---
-apiVersion: template.crossplane.io/v1alpha1
+apiVersion: nagios.crossplane.io/v1alpha1
 kind: ProviderConfig
 metadata:
   name: example
@@ -25,7 +29,7 @@ spec:
       name: example-provider-secret
       key: credentials
 ---
-apiVersion: template.crossplane.io/v1alpha1
+apiVersion: nagios.crossplane.io/v1alpha1
 kind: ClusterProviderConfig
 metadata:
   name: example

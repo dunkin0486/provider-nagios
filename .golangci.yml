@@ -99,6 +99,12 @@ linters:
       - third_party$
       - builtin$
       - examples$
+      # internal/client is ported verbatim from
+      # dunkin0486/terraform-provider-nagios's internal/client to preserve
+      # its documented, live-instance-verified Nagios XI API quirks and
+      # existing test coverage. Keep it byte-for-byte syncable with the
+      # source rather than reshaping it to satisfy style linters here.
+      - internal/client/.+\.go$
 issues:
   max-same-issues: 0
   new: false

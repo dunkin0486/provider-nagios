@@ -1,0 +1,44 @@
+apiVersion: monitoring.nagios.crossplane.io/v1alpha1
+kind: Host
+metadata:
+  name: web01
+  namespace: default
+  annotations:
+    # The value Nagios knows this host by. Defaults to metadata.name if unset.
+    crossplane.io/external-name: web01.example.com
+spec:
+  forProvider:
+    address: 10.0.0.10
+    maxCheckAttempts: "3"
+    checkPeriod: 24x7
+    notificationInterval: "30"
+    notificationPeriod: 24x7
+    contacts:
+      - nagiosadmin
+    templates:
+      - generic-host
+  providerConfigRef:
+    name: example
+    kind: ProviderConfig
+---
+apiVersion: monitoring.nagios.crossplane.io/v1alpha1
+kind: Host
+metadata:
+  name: web02
+  namespace: default
+  annotations:
+    crossplane.io/external-name: web02.example.com
+spec:
+  forProvider:
+    address: 10.0.0.11
+    maxCheckAttempts: "3"
+    checkPeriod: 24x7
+    notificationInterval: "30"
+    notificationPeriod: 24x7
+    contacts:
+      - nagiosadmin
+    templates:
+      - generic-host
+  providerConfigRef:
+    name: example
+    kind: ClusterProviderConfig

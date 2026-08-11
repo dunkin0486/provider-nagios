@@ -1,35 +1,56 @@
-# provider-template
+# provider-nagios
 
-`provider-template` is a minimal [Crossplane](https://crossplane.io/) Provider
-that is meant to be used as a template for implementing new Providers. It comes
-with the following features that are meant to be refactored:
+`provider-nagios` is a [Crossplane](https://crossplane.io/) Provider for
+managing [Nagios XI](https://www.nagios.com/products/nagios-xi/) monitoring
+configuration as Kubernetes resources. It is based on
+`crossplane/provider-template` and currently ships with:
 
-- A `ProviderConfig` type that only points to a credentials `Secret`.
-- A `MyType` resource type that serves as an example managed resource.
-- A managed resource controller that reconciles `MyType` objects and simply
-  prints their configuration in its `Observe` method.
+- A `ProviderConfig`/`ClusterProviderConfig` type that points to a
+  credentials `Secret`.
+- A `monitoring.nagios.crossplane.io` API group with a `Host` managed
+  resource type, backed by `internal/client` — a plain Go HTTP client for
+  Nagios XI's REST API (`/api/v1/config/*`, `/api/v1/system/*`), ported from
+  [`dunkin0486/terraform-provider-nagios`](https://github.com/dunkin0486/terraform-provider-nagios).
+
+## Credentials
+
+The `Secret` referenced by a `ProviderConfig`/`ClusterProviderConfig` must
+contain JSON of the form:
+
+```json
+{"url": "http://nagios.example.com/nagiosxi", "token": "<api key>"}
+```
+
+The API token is found in the Nagios XI web UI under Admin > API Key. See
+`examples/provider/config.yaml`.
+
+## Status
+
+Early development. Only `Host` is implemented so far. `internal/client`
+carries real, load-bearing quirks of the Nagios XI API (every response is
+HTTP 200 even on failure, every write needs a follow-up `applyconfig` call,
+PUT addresses the *old* name, etc.) — see that package's doc comments before
+touching it, and port additional object types (`service.go`, `contact.go`,
+etc.) from the Terraform provider's `internal/client` the same way `host.go`
+was ported, rather than reimplementing them from scratch.
 
 ## Developing
 
-1. Use this repository as a template to create a new one.
-1. Run `make submodules` to initialize the "build" Make submodule we use for CI/CD.
-1. Rename the provider by running the following command:
-```shell
-  export provider_name=MyProvider # Camel case, e.g. GitHub
-  make provider.prepare provider=${provider_name}
-```
-4. Add your new type by running the following command:
-```shell
-  export group=sample # lower case e.g. core, cache, database, storage, etc.
-  export type=MyType # Camel casee.g. Bucket, Database, CacheCluster, etc.
-  make provider.addtype provider=${provider_name} group=${group} kind=${type}
-```
-5. Replace the *sample* group with your new group in apis/{provider}.go
-5. Replace the *mytype* type with your new type in internal/controller/{provider}.go
-5. Replace the default controller and ProviderConfig implementations with your own
-5. Register your new type into `SetupGated` function in `internal/controller/register.go`
+1. Run `make submodules` to initialize the "build" Make submodule used for CI/CD.
+2. Add a new type:
+   ```shell
+   export group=monitoring # lower case, e.g. monitoring
+   export type=Service     # Camel case, e.g. Service, Contact, Command
+   make provider.addtype provider=Nagios group=${group} kind=${type}
+   ```
+3. Register the new type's scheme in `apis/nagios.go` and its controller in
+   `internal/controller/nagios.go`.
+4. Port the matching object file from `internal/client` in the Terraform
+   provider (or write a new one following its pattern) and wire it into the
+   new type's controller, following `internal/controller/host` as the
+   reference implementation.
 5. Run `make reviewable` to run code generation, linters, and tests.
-5. Run `make build` to build the provider.
+6. Run `make build` to build the provider.
 
 Refer to Crossplane's [CONTRIBUTING.md] file for more information on how the
 Crossplane community prefers to work. The [Provider Development][provider-dev]

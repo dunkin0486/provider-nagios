@@ -1,13 +1,13 @@
 apiVersion: meta.pkg.crossplane.io/v1alpha1
 kind: Provider
 metadata:
-  name: provider-template
+  name: provider-nagios
   annotations:
-    meta.crossplane.io/maintainer: Crossplane Maintainers <info@crossplane.io>
-    meta.crossplane.io/source: github.com/crossplane/provider-template
+    meta.crossplane.io/maintainer: Chris Dunkin <20403677+dunkin0486@users.noreply.github.com>
+    meta.crossplane.io/source: github.com/dunkin0486/provider-nagios
     meta.crossplane.io/license: Apache-2.0
     meta.crossplane.io/description: |
-      A template that can be used to create Crossplane providers.
+      A Crossplane provider for managing Nagios monitoring configuration.
 spec:
   capabilities:
     - safe-start

@@ -1,0 +1,506 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.20.0
+  name: hosts.monitoring.nagios.crossplane.io
+spec:
+  group: monitoring.nagios.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - nagios
+    kind: Host
+    listKind: HostList
+    plural: hosts
+    singular: host
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: 'A Host is a Nagios XI host object: a monitored device or system.'
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: A HostSpec defines the desired state of a Host.
+            properties:
+              forProvider:
+                description: |-
+                  HostParameters are the configurable fields of a Host. The Nagios host_name
+                  is not a field here - it is taken from the resource's external-name
+                  annotation, defaulted to metadata.name if unset.
+
+                  Field shapes mirror internal/client.Host's wire types directly (e.g.
+                  numeric-looking fields stay string) rather than being remapped to more
+                  idiomatic Go types, since Nagios XI's API itself expects string form for
+                  these values.
+                properties:
+                  actionUrl:
+                    description: ActionURL is a URL for actions to be performed on
+                      the host.
+                    type: string
+                  activeChecksEnabled:
+                    description: |-
+                      ActiveChecksEnabled determines whether active checks of the host are
+                      enabled.
+                    type: boolean
+                  address:
+                    description: Address is the host's IP address or FQDN.
+                    type: string
+                  alias:
+                    description: Alias is a longer name/description for the host.
+                    type: string
+                  checkCommand:
+                    description: |-
+                      CheckCommand is the short name of the command used to check the
+                      status of the host.
+                    type: string
+                  checkFreshness:
+                    description: |-
+                      CheckFreshness determines whether freshness checks are enabled for
+                      this host.
+                    type: boolean
+                  checkPeriod:
+                    description: |-
+                      CheckPeriod is the name of the time period during which active checks
+                      of this host can occur.
+                    type: string
+                  contactGroups:
+                    description: |-
+                      ContactGroups are the short names of contact groups that should be
+                      notified whenever there are problems with this host.
+                    items:
+                      type: string
+                    type: array
+                  contacts:
+                    description: |-
+                      Contacts are the short names of contacts that should be notified
+                      whenever there are problems with this host.
+                    items:
+                      type: string
+                    type: array
+                  coords2d:
+                    description: CoordsTwoD are the host's 2D status map coordinates
+                      ("x,y").
+                    type: string
+                  coords3d:
+                    description: CoordsThreeD are the host's 3D status map coordinates
+                      ("x,y,z").
+                    type: string
+                  displayName:
+                    description: DisplayName overrides how the host is shown in the
+                      Nagios UI.
+                    type: string
+                  eventHandler:
+                    description: |-
+                      EventHandler is the short name of the command run whenever a state
+                      change occurs for the host.
+                    type: string
+                  eventHandlerEnabled:
+                    description: EventHandlerEnabled determines whether the event
+                      handler is enabled.
+                    type: boolean
+                  firstNotificationDelay:
+                    description: |-
+                      FirstNotificationDelay is the number of minutes to wait before
+                      sending the first problem notification.
+                    type: string
+                  flapDetectionEnabled:
+                    description: FlapDetectionEnabled determines whether flap detection
+                      is enabled.
+                    type: boolean
+                  flapDetectionOptions:
+                    description: FlapDetectionOptions are the host states used in
+                      flap detection.
+                    items:
+                      type: string
+                    type: array
+                  freeVariables:
+                    additionalProperties:
+                      type: string
+                    description: FreeVariables are custom `_`-prefixed macros attached
+                      to the host.
+                    type: object
+                  freshnessThreshold:
+                    description: |-
+                      FreshnessThreshold is the freshness threshold in seconds for this
+                      host.
+                    type: string
+                  highFlapThreshold:
+                    description: |-
+                      HighFlapThreshold is the high state change threshold used in flap
+                      detection.
+                    type: string
+                  hostgroups:
+                    description: |-
+                      Hostgroups are the short names of hostgroups this host should be a
+                      member of.
+                    items:
+                      type: string
+                    type: array
+                  iconImage:
+                    description: IconImage is the image used in the Nagios UI's status/map
+                      views.
+                    type: string
+                  iconImageAlt:
+                    description: IconImageAlt is the alt text for IconImage.
+                    type: string
+                  lowFlapThreshold:
+                    description: |-
+                      LowFlapThreshold is the low state change threshold used in flap
+                      detection.
+                    type: string
+                  maxCheckAttempts:
+                    description: |-
+                      MaxCheckAttempts is the number of times Nagios retries a check before
+                      treating the host as truly down.
+                    type: string
+                  notes:
+                    description: Notes are additional notes about the host.
+                    type: string
+                  notesUrl:
+                    description: NotesURL is a URL for additional notes about the
+                      host.
+                    type: string
+                  notificationInterval:
+                    description: |-
+                      NotificationInterval is the number of minutes to wait before
+                      re-notifying a contact about a problem.
+                    type: string
+                  notificationOptions:
+                    description: |-
+                      NotificationOptions are the states for which notifications should be
+                      sent out, comma-joined (e.g. "d,u,r").
+                    type: string
+                  notificationPeriod:
+                    description: |-
+                      NotificationPeriod is the name of the time period during which
+                      notifications about this host can be sent out.
+                    type: string
+                  notificationsEnabled:
+                    description: |-
+                      NotificationsEnabled determines whether notifications for the host
+                      are enabled.
+                    type: boolean
+                  parents:
+                    description: |-
+                      Parents lists the short names of hosts this host depends on for
+                      network reachability.
+                    items:
+                      type: string
+                    type: array
+                  passiveChecksEnabled:
+                    description: |-
+                      PassiveChecksEnabled determines whether passive checks of the host
+                      are enabled.
+                    type: boolean
+                  processPerfData:
+                    description: |-
+                      ProcessPerfData determines whether performance data processing is
+                      enabled.
+                    type: boolean
+                  retainNonstatusInformation:
+                    description: |-
+                      RetainNonstatusInformation determines whether non-status information
+                      about the host is retained across program restarts.
+                    type: boolean
+                  retainStatusInformation:
+                    description: |-
+                      RetainStatusInformation determines whether status-related information
+                      about the host is retained across program restarts.
+                    type: boolean
+                  retryInterval:
+                    description: |-
+                      RetryInterval is the number of minutes to wait before scheduling a
+                      re-check of the host after a problem is detected.
+                    type: string
+                  stalkingOptions:
+                    description: StalkingOptions are the states for which stalking
+                      should be enabled.
+                    type: string
+                  statusMapImage:
+                    description: |-
+                      StatusMapImage is the image used for the host in 2D status map
+                      views.
+                    type: string
+                  templates:
+                    description: |-
+                      Templates are the names of host templates this host should inherit
+                      from.
+                    items:
+                      type: string
+                    type: array
+                  vrmlImage:
+                    description: VRMLImage is the image used for the host in 3D status
+                      map views.
+                    type: string
+                required:
+                - address
+                - checkPeriod
+                - maxCheckAttempts
+                - notificationInterval
+                - notificationPeriod
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
+                items:
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  kind: ClusterProviderConfig
+                  name: default
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
+                properties:
+                  kind:
+                    description: Kind of the referenced object.
+                    type: string
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                required:
+                - name
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: A HostStatus represents the observed state of a Host.
+            properties:
+              atProvider:
+                description: |-
+                  HostObservation are the observable fields of a Host, as last read back
+                  from Nagios XI.
+                properties:
+                  actionUrl:
+                    type: string
+                  activeChecksEnabled:
+                    type: boolean
+                  address:
+                    type: string
+                  alias:
+                    type: string
+                  checkCommand:
+                    type: string
+                  checkFreshness:
+                    type: boolean
+                  checkPeriod:
+                    type: string
+                  contactGroups:
+                    items:
+                      type: string
+                    type: array
+                  contacts:
+                    items:
+                      type: string
+                    type: array
+                  coords2d:
+                    type: string
+                  coords3d:
+                    type: string
+                  displayName:
+                    type: string
+                  eventHandler:
+                    type: string
+                  eventHandlerEnabled:
+                    type: boolean
+                  firstNotificationDelay:
+                    type: string
+                  flapDetectionEnabled:
+                    type: boolean
+                  flapDetectionOptions:
+                    items:
+                      type: string
+                    type: array
+                  freeVariables:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  freshnessThreshold:
+                    type: string
+                  highFlapThreshold:
+                    type: string
+                  hostgroups:
+                    items:
+                      type: string
+                    type: array
+                  iconImage:
+                    type: string
+                  iconImageAlt:
+                    type: string
+                  lowFlapThreshold:
+                    type: string
+                  maxCheckAttempts:
+                    type: string
+                  notes:
+                    type: string
+                  notesUrl:
+                    type: string
+                  notificationInterval:
+                    type: string
+                  notificationOptions:
+                    type: string
+                  notificationPeriod:
+                    type: string
+                  notificationsEnabled:
+                    type: boolean
+                  parents:
+                    items:
+                      type: string
+                    type: array
+                  passiveChecksEnabled:
+                    type: boolean
+                  processPerfData:
+                    type: boolean
+                  retainNonstatusInformation:
+                    type: boolean
+                  retainStatusInformation:
+                    type: boolean
+                  retryInterval:
+                    type: string
+                  stalkingOptions:
+                    type: string
+                  statusMapImage:
+                    type: string
+                  templates:
+                    items:
+                      type: string
+                    type: array
+                  vrmlImage:
+                    type: string
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              lastHandledReconcileAt:
+                description: |-
+                  LastHandledReconcileAt holds the value of the most recent
+                  reconcile-requested-at annotation token that the controller has
+                  processed. Users can compare this to the annotation to determine
+                  whether a reconcile request has been handled.
+                type: string
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
