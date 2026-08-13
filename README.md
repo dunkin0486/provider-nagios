@@ -52,6 +52,64 @@ was ported, rather than reimplementing them from scratch.
 5. Run `make reviewable` to run code generation, linters, and tests.
 6. Run `make build` to build the provider.
 
+## Acceptance Tests (Docker Compose)
+
+This repository includes a Docker Compose acceptance harness that:
+
+- Starts a local `k3s` API server.
+- Starts Nagios XI using your private GHCR image.
+- Runs the provider out-of-cluster against that API server.
+- Applies provider CRDs plus a `ProviderConfig` and a sample `Host`.
+- Waits for the `Host` to become `Ready` and validates observed state.
+
+### Prerequisites
+
+- Docker with Compose plugin (`docker compose`).
+- Access to your private GHCR image (`docker login ghcr.io`).
+- Optional: a Nagios XI API token. If omitted, the acceptance runner derives
+   and enables the `nagiosadmin` API token from inside the running Nagios XI
+   container.
+
+### Run
+
+Option A: export env vars directly.
+
+```shell
+export NAGIOS_XI_IMAGE=ghcr.io/<org>/<nagios-xi-image>:<tag>
+# Optional. If not set, it is auto-derived from the running nagiosxi container.
+export NAGIOS_API_TOKEN=<nagios-xi-api-token>
+# Optional. Defaults to http://nagiosxi/nagiosxi inside the compose network.
+export NAGIOS_URL=http://nagiosxi/nagiosxi
+# Optional fast local mode: keep compose stack running between runs.
+export ACCEPTANCE_PRESERVE_STACK=true
+
+make acceptance.run
+```
+
+Option B: use an env file.
+
+```shell
+cp cluster/acceptance/.env.example cluster/acceptance/.env
+# edit cluster/acceptance/.env with your image + token
+make acceptance.run
+```
+
+By default, `cluster/acceptance/.env.example` uses the same private GHCR image
+published by `terraform-provider-nagios` (`ghcr.io/dunkin0486/terraform-provider-nagios-test-nagiosxi:latest`).
+
+You can tune the readiness timeout with `ACCEPTANCE_WAIT_TIMEOUT` (default: `900s`).
+
+For faster local iteration after the first bootstrap:
+
+- Set `ACCEPTANCE_PRESERVE_STACK=true` to leave the stack running after tests (fastest).
+- Set `ACCEPTANCE_KEEP_VOLUMES=true` to tear down containers/network but keep volumes.
+
+When using `ACCEPTANCE_PRESERVE_STACK=true`, stop and clean up manually when needed:
+
+```shell
+make acceptance.clean
+```
+
 Refer to Crossplane's [CONTRIBUTING.md] file for more information on how the
 Crossplane community prefers to work. The [Provider Development][provider-dev]
 guide may also be of use.

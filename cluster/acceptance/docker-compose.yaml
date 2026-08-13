@@ -1,0 +1,82 @@
+services:
+  k3s:
+    image: rancher/k3s:v1.31.5-k3s1
+    privileged: true
+    restart: unless-stopped
+    command:
+      - server
+      - --disable=traefik
+      - --disable-agent
+      - --write-kubeconfig=/kube/config
+      - --write-kubeconfig-mode=644
+      - --tls-san=k3s
+    volumes:
+      - kubeconfig:/kube
+
+  nagiosxi:
+    image: ${NAGIOS_XI_IMAGE}
+    privileged: true
+    cgroup: host
+    tmpfs:
+      - /tmp
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+    environment:
+      ACCEPT_TERMS: "yes"
+    healthcheck:
+      test: ["CMD", "curl", "-fsk", "http://localhost/nagiosxi/login.php"]
+      interval: 30s
+      timeout: 10s
+      retries: 60
+      start_period: 20m
+
+  provider:
+    image: golang:1.25.11
+    restart: unless-stopped
+    working_dir: /workspace
+    command:
+      - sh
+      - -ec
+      - |
+        while [ ! -f /kube/config ]; do
+          sleep 1
+        done
+        sed -i 's/127.0.0.1/k3s/g' /kube/config || true
+        go run ./cmd/provider/main.go --debug --poll=15s
+    environment:
+      KUBECONFIG: /kube/config
+    volumes:
+      - ../..:/workspace
+      - kubeconfig:/kube
+    depends_on:
+      - k3s
+      - nagiosxi
+
+  tests:
+    image: dtzar/helm-kubectl:3.17.3
+    entrypoint:
+      - /bin/bash
+    working_dir: /workspace
+    command:
+      - -ec
+      - |
+        while [ ! -f /kube/config ]; do
+          sleep 1
+        done
+        sed -i 's/127.0.0.1/k3s/g' /kube/config || true
+        ./cluster/acceptance/scripts/run-acceptance.sh
+    environment:
+      KUBECONFIG: /kube/config
+      NAGIOS_URL: ${NAGIOS_URL:-http://nagiosxi/nagiosxi}
+      NAGIOS_API_TOKEN: ${NAGIOS_API_TOKEN:-}
+      ACCEPTANCE_WAIT_TIMEOUT: ${ACCEPTANCE_WAIT_TIMEOUT:-900s}
+    volumes:
+      - ../..:/workspace
+      - kubeconfig:/kube
+    depends_on:
+      - provider
+
+volumes:
+  kubeconfig:
