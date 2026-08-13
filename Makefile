@@ -55,6 +55,17 @@ fallthrough: submodules
 # integration tests
 e2e.run: test-integration
 
+# acceptance tests (docker compose + k3s + nagios xi)
+acceptance.run:
+	@$(INFO) running acceptance tests with docker compose
+	@./cluster/acceptance/run.sh || $(FAIL)
+	@$(OK) acceptance tests passed
+
+acceptance.clean:
+	@$(INFO) tearing down acceptance docker compose stack
+	@NAGIOS_XI_IMAGE=$${NAGIOS_XI_IMAGE:-ghcr.io/dunkin0486/terraform-provider-nagios-test-nagiosxi:latest} docker compose -f cluster/acceptance/docker-compose.yaml down --volumes --remove-orphans || $(FAIL)
+	@$(OK) acceptance stack removed
+
 # Run integration tests.
 test-integration: $(KIND) $(KUBECTL) $(CROSSPLANE_CLI) $(HELM3)
 	@$(INFO) running integration tests using kind $(KIND_VERSION)
@@ -104,7 +115,7 @@ dev-clean: $(KIND) $(KUBECTL)
 	@$(INFO) Deleting kind cluster
 	@$(KIND) delete cluster --name=$(PROJECT_NAME)-dev
 
-.PHONY: submodules fallthrough test-integration run dev dev-clean
+.PHONY: submodules fallthrough test-integration acceptance.run acceptance.clean run dev dev-clean
 
 # ====================================================================================
 # Special Targets
@@ -150,6 +161,8 @@ define CROSSPLANE_MAKE_HELP
 Crossplane Targets:
     submodules            Update the submodules, such as the common build scripts.
     run                   Run crossplane locally, out-of-cluster. Useful for development.
+	acceptance.run        Run docker compose acceptance tests locally.
+	acceptance.clean      Tear down the docker compose acceptance stack and volumes.
 
 endef
 # The reason CROSSPLANE_MAKE_HELP is used instead of CROSSPLANE_HELP is because the crossplane
