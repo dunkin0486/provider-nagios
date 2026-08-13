@@ -22,6 +22,7 @@ import (
 
 	"github.com/dunkin0486/provider-nagios/internal/controller/config"
 	"github.com/dunkin0486/provider-nagios/internal/controller/host"
+	"github.com/dunkin0486/provider-nagios/internal/controller/service"
 )
 
 // SetupGated creates all Nagios controllers with safe-start support and adds them to
@@ -30,6 +31,7 @@ func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
 		config.Setup,
 		host.SetupGated,
+		service.SetupGated,
 	} {
 		if err := setup(mgr, o); err != nil {
 			return err

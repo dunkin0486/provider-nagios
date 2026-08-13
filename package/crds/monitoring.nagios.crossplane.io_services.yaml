@@ -1,0 +1,525 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.20.0
+  name: services.monitoring.nagios.crossplane.io
+spec:
+  group: monitoring.nagios.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - nagios
+    kind: Service
+    listKind: ServiceList
+    plural: services
+    singular: service
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: A Service is an example API type.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: A ServiceSpec defines the desired state of a Service.
+            properties:
+              forProvider:
+                description: |-
+                  ServiceParameters are the configurable fields of a Service. The Nagios
+                  config_name is not a field here - it is taken from the resource's
+                  external-name annotation, defaulted to metadata.name if unset, mirroring
+                  HostParameters.
+
+                  Field shapes mirror internal/client.Service's wire types directly, with
+                  one deliberate exception preserved from the ported client: NotificationOptions
+                  is a []string here (and on the wire), while the equivalent field on Host is
+                  a comma-joined string - a real, intentionally-preserved API asymmetry, not
+                  a mistake to "fix" into consistency.
+                properties:
+                  actionUrl:
+                    description: ActionURL is a URL for actions to be performed on
+                      the service.
+                    type: string
+                  activeChecksEnabled:
+                    description: |-
+                      ActiveChecksEnabled determines whether active checks of the service
+                      are enabled.
+                    type: boolean
+                  checkCommand:
+                    description: |-
+                      CheckCommand is the short name of the command used to check the
+                      status of the service.
+                    type: string
+                  checkFreshness:
+                    description: |-
+                      CheckFreshness determines whether freshness checks are enabled for
+                      this service.
+                    type: boolean
+                  checkInterval:
+                    description: |-
+                      CheckInterval is the number of minutes between regularly scheduled
+                      checks of the service.
+                    type: string
+                  checkPeriod:
+                    description: |-
+                      CheckPeriod is the name of the time period during which active checks
+                      of this service can occur.
+                    type: string
+                  contactGroups:
+                    description: |-
+                      ContactGroups are the short names of contact groups that should be
+                      notified whenever there are problems with this service.
+                    items:
+                      type: string
+                    type: array
+                  contacts:
+                    description: |-
+                      Contacts are the short names of contacts that should be notified
+                      whenever there are problems with this service.
+                    items:
+                      type: string
+                    type: array
+                  description:
+                    description: |-
+                      Description is the service's description (Nagios's
+                      service_description). Together with the external-name (config_name)
+                      it forms the compound key Nagios's PUT endpoint addresses a service
+                      by.
+                    type: string
+                  displayName:
+                    description: DisplayName overrides how the service is shown in
+                      the Nagios UI.
+                    type: string
+                  eventHandler:
+                    description: |-
+                      EventHandler is the short name of the command run whenever a state
+                      change occurs for the service.
+                    type: string
+                  eventHandlerEnabled:
+                    description: EventHandlerEnabled determines whether the event
+                      handler is enabled.
+                    type: boolean
+                  firstNotificationDelay:
+                    description: |-
+                      FirstNotificationDelay is the number of minutes to wait before
+                      sending the first problem notification.
+                    type: string
+                  flapDetectionEnabled:
+                    description: FlapDetectionEnabled determines whether flap detection
+                      is enabled.
+                    type: boolean
+                  flapDetectionOptions:
+                    description: FlapDetectionOptions are the service states used
+                      in flap detection.
+                    items:
+                      type: string
+                    type: array
+                  freeVariables:
+                    additionalProperties:
+                      type: string
+                    description: FreeVariables are custom `_`-prefixed macros attached
+                      to the service.
+                    type: object
+                  freshnessThreshold:
+                    description: |-
+                      FreshnessThreshold is the freshness threshold in seconds for this
+                      service.
+                    type: string
+                  highFlapThreshold:
+                    description: |-
+                      HighFlapThreshold is the high state change threshold used in flap
+                      detection.
+                    type: string
+                  hostName:
+                    description: |-
+                      HostName lists the short names of the hosts this service is attached
+                      to. Nagios's DELETE endpoint addresses the service by this full set
+                      (comma-joined) rather than by config_name - see internal/client.Service's
+                      doc comment.
+                    items:
+                      type: string
+                    type: array
+                  hostgroupName:
+                    description: |-
+                      HostgroupName are the short names of hostgroups this service should
+                      additionally be applied to.
+                    items:
+                      type: string
+                    type: array
+                  iconImage:
+                    description: IconImage is the image used for the service in the
+                      Nagios UI.
+                    type: string
+                  iconImageAlt:
+                    description: IconImageAlt is the alt text for IconImage.
+                    type: string
+                  initialState:
+                    description: |-
+                      InitialState is the initial state of the service Nagios assumes on
+                      startup.
+                    type: string
+                  isVolatile:
+                    description: IsVolatile determines whether the service is treated
+                      as volatile.
+                    type: boolean
+                  lowFlapThreshold:
+                    description: |-
+                      LowFlapThreshold is the low state change threshold used in flap
+                      detection.
+                    type: string
+                  maxCheckAttempts:
+                    description: |-
+                      MaxCheckAttempts is the number of times Nagios retries a check before
+                      treating the service as truly in a problem state.
+                    type: string
+                  notes:
+                    description: Notes are additional notes about the service.
+                    type: string
+                  notesUrl:
+                    description: NotesURL is a URL for additional notes about the
+                      service.
+                    type: string
+                  notificationInterval:
+                    description: |-
+                      NotificationInterval is the number of minutes to wait before
+                      re-notifying a contact about a problem.
+                    type: string
+                  notificationOptions:
+                    description: |-
+                      NotificationOptions are the states for which notifications should be
+                      sent out (e.g. ["w", "u", "c", "r"]). Unlike Host, this is a list, not
+                      a comma-joined string - a real API asymmetry, see the type doc above.
+                    items:
+                      type: string
+                    type: array
+                  notificationPeriod:
+                    description: |-
+                      NotificationPeriod is the name of the time period during which
+                      notifications about this service can be sent out.
+                    type: string
+                  notificationsEnabled:
+                    description: |-
+                      NotificationsEnabled determines whether notifications for the service
+                      are enabled.
+                    type: boolean
+                  obsessOverService:
+                    description: |-
+                      ObsessOverService determines whether Nagios "obsesses" over the
+                      service for distributed monitoring purposes.
+                    type: boolean
+                  passiveChecksEnabled:
+                    description: |-
+                      PassiveChecksEnabled determines whether passive checks of the service
+                      are enabled.
+                    type: boolean
+                  processPerfData:
+                    description: |-
+                      ProcessPerfData determines whether performance data processing is
+                      enabled.
+                    type: boolean
+                  retainNonstatusInformation:
+                    description: |-
+                      RetainNonstatusInformation determines whether non-status information
+                      about the service is retained across program restarts.
+                    type: boolean
+                  retainStatusInformation:
+                    description: |-
+                      RetainStatusInformation determines whether status-related information
+                      about the service is retained across program restarts.
+                    type: boolean
+                  retryInterval:
+                    description: |-
+                      RetryInterval is the number of minutes to wait before scheduling a
+                      re-check of the service after a problem is detected.
+                    type: string
+                  servicegroups:
+                    description: |-
+                      Servicegroups are the short names of servicegroups this service
+                      should be a member of.
+                    items:
+                      type: string
+                    type: array
+                  templates:
+                    description: |-
+                      Templates are the names of service templates this service should
+                      inherit from.
+                    items:
+                      type: string
+                    type: array
+                required:
+                - checkCommand
+                - checkInterval
+                - checkPeriod
+                - description
+                - hostName
+                - maxCheckAttempts
+                - notificationInterval
+                - notificationPeriod
+                - retryInterval
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
+                items:
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  kind: ClusterProviderConfig
+                  name: default
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
+                properties:
+                  kind:
+                    description: Kind of the referenced object.
+                    type: string
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                required:
+                - name
+                type: object
+            required:
+            - forProvider
+            type: object
+          status:
+            description: A ServiceStatus represents the observed state of a Service.
+            properties:
+              atProvider:
+                description: |-
+                  ServiceObservation are the observable fields of a Service, as last read
+                  back from Nagios XI.
+                properties:
+                  actionUrl:
+                    type: string
+                  activeChecksEnabled:
+                    type: boolean
+                  checkCommand:
+                    type: string
+                  checkFreshness:
+                    type: boolean
+                  checkInterval:
+                    type: string
+                  checkPeriod:
+                    type: string
+                  contactGroups:
+                    items:
+                      type: string
+                    type: array
+                  contacts:
+                    items:
+                      type: string
+                    type: array
+                  description:
+                    type: string
+                  displayName:
+                    type: string
+                  eventHandler:
+                    type: string
+                  eventHandlerEnabled:
+                    type: boolean
+                  firstNotificationDelay:
+                    type: string
+                  flapDetectionEnabled:
+                    type: boolean
+                  flapDetectionOptions:
+                    items:
+                      type: string
+                    type: array
+                  freeVariables:
+                    additionalProperties:
+                      type: string
+                    type: object
+                  freshnessThreshold:
+                    type: string
+                  highFlapThreshold:
+                    type: string
+                  hostName:
+                    items:
+                      type: string
+                    type: array
+                  hostgroupName:
+                    items:
+                      type: string
+                    type: array
+                  iconImage:
+                    type: string
+                  iconImageAlt:
+                    type: string
+                  initialState:
+                    type: string
+                  isVolatile:
+                    type: boolean
+                  lowFlapThreshold:
+                    type: string
+                  maxCheckAttempts:
+                    type: string
+                  notes:
+                    type: string
+                  notesUrl:
+                    type: string
+                  notificationInterval:
+                    type: string
+                  notificationOptions:
+                    items:
+                      type: string
+                    type: array
+                  notificationPeriod:
+                    type: string
+                  notificationsEnabled:
+                    type: boolean
+                  obsessOverService:
+                    type: boolean
+                  passiveChecksEnabled:
+                    type: boolean
+                  processPerfData:
+                    type: boolean
+                  retainNonstatusInformation:
+                    type: boolean
+                  retainStatusInformation:
+                    type: boolean
+                  retryInterval:
+                    type: string
+                  servicegroups:
+                    items:
+                      type: string
+                    type: array
+                  templates:
+                    items:
+                      type: string
+                    type: array
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              lastHandledReconcileAt:
+                description: |-
+                  LastHandledReconcileAt holds the value of the most recent
+                  reconcile-requested-at annotation token that the controller has
+                  processed. Users can compare this to the annotation to determine
+                  whether a reconcile request has been handled.
+                type: string
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
