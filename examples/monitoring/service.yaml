@@ -1,0 +1,51 @@
+apiVersion: monitoring.nagios.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  name: web01-cpu-load
+  namespace: default
+  annotations:
+    # The value Nagios knows this service by (config_name). Defaults to
+    # metadata.name if unset.
+    crossplane.io/external-name: web01-cpu-load
+spec:
+  forProvider:
+    hostName:
+      - web01.example.com
+    description: CPU Load
+    checkCommand: check_load
+    maxCheckAttempts: "3"
+    checkInterval: "5"
+    retryInterval: "1"
+    checkPeriod: 24x7
+    notificationInterval: "30"
+    notificationPeriod: 24x7
+    contacts:
+      - nagiosadmin
+  providerConfigRef:
+    name: example
+    kind: ProviderConfig
+---
+apiVersion: monitoring.nagios.crossplane.io/v1alpha1
+kind: Service
+metadata:
+  name: web02-cpu-load
+  namespace: default
+  annotations:
+    crossplane.io/external-name: web02-cpu-load
+spec:
+  forProvider:
+    hostName:
+      - web02.example.com
+    description: CPU Load
+    checkCommand: check_load
+    maxCheckAttempts: "3"
+    checkInterval: "5"
+    retryInterval: "1"
+    checkPeriod: 24x7
+    notificationInterval: "30"
+    notificationPeriod: 24x7
+    contacts:
+      - nagiosadmin
+  providerConfigRef:
+    name: example
+    kind: ClusterProviderConfig
